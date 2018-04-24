@@ -1,0 +1,104 @@
+---
+- name: Add Icinga APT key
+  apt_key:
+    url: https://packages.icinga.com/icinga.key
+
+- name: Add Icinga APT repository
+  apt_repository:
+    repo: deb http://packages.icinga.com/{{ ansible_distribution | lower }} icinga-{{ ansible_distribution_release }} main
+    filename: icinga
+    update_cache: true
+
+- name: Install required packages
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - icinga2
+    - vim-icinga2
+    - monitoring-plugins
+
+- name: Create configuration files
+  template:
+    src: "{{ item }}.conf.j2"
+    dest: "/etc/icinga2/{{ item }}.conf"
+    owner: root
+    group: "{{ icinga2_group }}"
+    mode: 0640
+  with_items:
+    - icinga2
+    - init
+  notify: Restart Icinga 2
+
+- name: Remove useless files and directories
+  file:
+    path: "/etc/icinga2/{{ item }}"
+    state: absent
+  with_items:
+    - conf.d
+    - constants.conf
+    - features-available
+    - features-enabled
+    - pki
+    - scripts
+    - zones.conf
+    - zones.d
+
+- name: Create certs directory
+  file:
+    path: "/var/lib/icinga2/certs"
+    state: directory
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0750
+
+- name: Create keypair
+  command:
+    cmd: >
+      icinga2 pki new-cert
+      --cn "{{ inventory_hostname }}"
+      --key "/var/lib/icinga2/certs/{{ inventory_hostname }}.key"
+      --cert "/var/lib/icinga2/certs/{{ inventory_hostname }}.crt"
+    creates: "/var/lib/icinga2/certs/{{ inventory_hostname }}.key"
+  register: keypair
+
+- name: Retrieve ticket
+  command:
+    cmd: icinga2 pki ticket --cn "{{ inventory_hostname }}"
+  changed_when: false
+  delegate_to: "{{ icinga2_ca_host | mandatory }}"
+  when: keypair.changed
+  register: ticket
+
+- name: Fetch certificate of CA host
+  slurp:
+    src: "/var/lib/icinga2/certs/{{ icinga2_ca_host }}.crt"
+  delegate_to: "{{ icinga2_ca_host }}"
+  when: keypair.changed
+  register: ca_cert
+
+- name: Place certificate of CA host
+  copy:
+    content: "{{ ca_cert.content | b64decode }}"
+    dest: "/var/lib/icinga2/certs/{{ icinga2_ca_host }}.crt"
+    owner: root
+    group: "{{ icinga2_group }}"
+    mode: 0640
+  when: keypair.changed
+
+- name: Request certificate from parent
+  command:
+    cmd: >
+      icinga2 pki request
+      --host "{{ hostvars[icinga2_ca_host]['ansible_host'] }}"
+      --ticket "{{ ticket.stdout }}"
+      --key "/var/lib/icinga2/certs/{{ inventory_hostname }}.key"
+      --cert "/var/lib/icinga2/certs/{{ inventory_hostname }}.crt"
+      --trustedcert "/var/lib/icinga2/certs/{{ icinga2_ca_host }}.crt"
+      --ca /var/lib/icinga2/certs/ca.crt
+  when: keypair.changed
+  notify: Restart Icinga 2
+
+- name: Enable service
+  service:
+    name: icinga2.service
+    enabled: true
