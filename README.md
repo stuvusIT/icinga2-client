@@ -5,6 +5,8 @@ The zones are automatically configured (parent zones + a global template zone).
 Your nodename is automatically set to the inventory hostname.
 
 A certificate is automatically requested and installed.
+This done by generating the certificate on the target machine, fetching a ticket from the CA (by delegating the task to the CA host), and requesting the certificate directly on the target.
+No keys are transferred to the control machine.
 
 This role belongs to [icinga2-master](https://github.com/stuvusIT/icinga2-master).
 
@@ -33,7 +35,7 @@ Ubuntu
 ```yml
 - hosts: all
   roles:
-  - icinga2-client
+  - role: icinga2-client
     icinga2_parent_zone: master
     icinga2_ca_host: icinga01
 ```

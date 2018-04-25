@@ -11,3 +11,5 @@ icinga2_api_bind_host: 0.0.0.0
 icinga2_api_bind_port: 5665
 
 icinga2_log_severity: warning
+
+icinga2_constants: {}
