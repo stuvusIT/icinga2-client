@@ -15,7 +15,7 @@
   with_items:
     - icinga2
     - vim-icinga2
-    - monitoring-plugins
+    - "{{ icinga2_monitoring_package }}"
 
 - name: Create configuration files
   template:

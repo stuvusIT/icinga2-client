@@ -23,6 +23,7 @@ Ubuntu
 | `icinga2_noagent_group`         | `icinga2-noagent`         | If a host is in this group, the client will not be deployed             |
 | `icinga2_user`                  | `nagios`                  | User under which Icinga 2 is run                                        |
 | `icinga2_group`                 | `nagios`                  | Group under which Icinga 2 is run                                       |
+| `icinga2_monitoring_package`    | `monitoring-plugins`      | Name of the monitoring plugins package                                  |
 | `icinga2_plugin_dir`            | `/usr/lib/nagios/plugins` | Directory that contains the monitoring plugins                          |
 | `icinga2_constants`             | `{}`                      | Dict of Icinga 2 constant strings                                       |
 | `icinga2_icinga2_api_bind_host` | `0.0.0.0`                 | Host to bind on for API requests                                        |

@@ -2,6 +2,7 @@
 icinga2_noagent_group: icinga2-noagent
 icinga2_user: nagios
 icinga2_group: nagios
+icinga2_monitoring_package: monitoring-plugins
 
 icinga2_plugin_dir: /usr/lib/nagios/plugins
 icinga2_manubulon_plugin_dir: /usr/lib/nagios/plugins
