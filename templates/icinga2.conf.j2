@@ -2,7 +2,7 @@
 
 // Constants
 const NodeName = "{{ inventory_hostname }}"
-{% for name,value in icinga2_constants.iteritems() %}
+{% for name,value in icinga2_constants.items() %}
 const {{ name }} = "{{ value }}"
 {% endfor %}
 
