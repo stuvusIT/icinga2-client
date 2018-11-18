@@ -11,11 +11,10 @@
 
 - name: Install required packages
   apt:
-    name: "{{ item }}"
-  with_items:
-    - icinga2
-    - vim-icinga2
-    - "{{ icinga2_monitoring_package }}"
+    name:
+      - icinga2
+      - vim-icinga2
+      - "{{ icinga2_monitoring_package }}"
 
 - name: Create configuration files
   template:
