@@ -8,6 +8,10 @@ const {{ name }} = "{{ value }}"
 
 // API feature
 object ApiListener "api" {
+	// ca_path, cert_path, key_path are deprecated in icinga2 r2.10 but needed to support old versions
+	ca_path = "/var/lib/icinga2/certs/ca.crt"
+	cert_path = "/var/lib/icinga2/certs/{{ inventory_hostname }}.crt"
+	key_path = "/var/lib/icinga2/certs/{{ inventory_hostname }}.key"
 	bind_host = "{{ icinga2_api_bind_host }}"
 	bind_port = {{ icinga2_api_bind_port }}
 	accept_config = true
