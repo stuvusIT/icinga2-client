@@ -65,14 +65,12 @@
     cmd: icinga2 pki ticket --cn "{{ inventory_hostname }}"
   changed_when: false
   delegate_to: "{{ icinga2_ca_host | mandatory }}"
-  when: keypair.changed
   register: ticket
 
 - name: Fetch certificate of CA host
   slurp:
     src: "/var/lib/icinga2/certs/{{ icinga2_ca_host }}.crt"
   delegate_to: "{{ icinga2_ca_host }}"
-  when: keypair.changed
   register: ca_cert
 
 - name: Place certificate of CA host
@@ -82,7 +80,6 @@
     owner: root
     group: "{{ icinga2_group }}"
     mode: 0640
-  when: keypair.changed
 
 - name: Request certificate from parent
   command:
@@ -94,8 +91,13 @@
       --cert "/var/lib/icinga2/certs/{{ inventory_hostname }}.crt"
       --trustedcert "/var/lib/icinga2/certs/{{ icinga2_ca_host }}.crt"
       --ca /var/lib/icinga2/certs/ca.crt
-  when: keypair.changed
   notify: Restart Icinga 2
+  register: icinga2_pki_request_result
+  failed_when: >
+    icinga2_pki_request_result.rc != 0 and
+    "Skipping automated renewal." not in icinga2_pki_request_result.stdout
+  changed_when: >
+    "Skipping automated renewal." not in icinga2_pki_request_result.stdout
 
 - name: Enable service
   service:
