@@ -34,12 +34,10 @@
     state: absent
   with_items:
     - conf.d
-    - constants.conf
     - features-available
     - features-enabled
     - pki
     - scripts
-    - zones.conf
     - zones.d
 
 - name: Create certs directory
